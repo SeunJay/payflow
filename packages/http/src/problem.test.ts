@@ -79,6 +79,7 @@ describe('Problem Details errors', () => {
 
   it('turns a rejected async handler into a problem too', async () => {
     const url = await serve((app) => {
+      // eslint-disable-next-line @typescript-eslint/require-await -- an async handler that throws is the case under test
       app.get('/v1/async', async () => {
         throw new AppError({ code: 'rate_limited', status: 429, title: 'Too Many Requests' });
       });
@@ -212,7 +213,7 @@ describe('Problem Details errors', () => {
     await fetch(`${url}/v1/boom`);
 
     expect(error).toHaveBeenCalledWith(
-      expect.objectContaining({ err: expect.objectContaining({ message: 'kaboom' }) }),
+      expect.objectContaining({ err: expect.objectContaining({ message: 'kaboom' }) as unknown }),
       'unhandled error',
     );
   });

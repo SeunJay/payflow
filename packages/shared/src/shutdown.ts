@@ -38,6 +38,9 @@ export function onShutdown(logger: Logger, steps: ShutdownStep[], timeoutMs = 10
     process.exit(failed ? 1 : 0);
   };
 
+  // run catches every step failure, so it never rejects
+  /* eslint-disable @typescript-eslint/no-misused-promises */
   process.on('SIGTERM', run);
   process.on('SIGINT', run);
+  /* eslint-enable @typescript-eslint/no-misused-promises */
 }

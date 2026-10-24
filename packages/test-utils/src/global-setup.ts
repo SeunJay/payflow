@@ -19,7 +19,7 @@ const PASSWORDS = { postgres: 'postgres_test', payflow: 'payflow_test', simulato
  * both migration folders run, then the migrated payflow database is copied to
  * a template that each test file clones.
  */
-export default async function setup(project: TestProject): Promise<() => Promise<void>> {
+export async function setup(project: TestProject): Promise<() => Promise<void>> {
   const [postgres, valkey] = await Promise.all([
     new PostgreSqlContainer('postgres:18')
       .withUsername('postgres')

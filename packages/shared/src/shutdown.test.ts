@@ -40,7 +40,13 @@ describe('onShutdown', () => {
 
   it('closes every step in registration order, then exits 0 (DW-3)', async () => {
     const order: string[] = [];
-    const step = (name: string): ShutdownStep => ({ name, close: async () => void order.push(name) });
+    const step = (name: string): ShutdownStep => ({
+      name,
+      close: () => {
+        order.push(name);
+        return Promise.resolve();
+      },
+    });
     onShutdown(logger, [step('http'), step('postgres'), step('valkey')]);
 
     await signal('SIGTERM');
@@ -55,7 +61,13 @@ describe('onShutdown', () => {
     const secondStarted = vi.fn();
     onShutdown(logger, [
       { name: 'first', close: () => first.promise },
-      { name: 'second', close: async () => secondStarted() },
+      {
+        name: 'second',
+        close: () => {
+          secondStarted();
+          return Promise.resolve();
+        },
+      },
     ]);
 
     const done = signal('SIGINT');
@@ -71,7 +83,13 @@ describe('onShutdown', () => {
     const valkeyClosed = vi.fn();
     onShutdown(logger, [
       { name: 'postgres', close: async () => Promise.reject(new Error('already closed')) },
-      { name: 'valkey', close: async () => valkeyClosed() },
+      {
+        name: 'valkey',
+        close: () => {
+          valkeyClosed();
+          return Promise.resolve();
+        },
+      },
     ]);
 
     await signal('SIGTERM');
@@ -102,7 +120,7 @@ describe('onShutdown', () => {
     await first;
   });
 
-  it('forces exit 1 when the steps outlast the timeout', async () => {
+  it('forces exit 1 when the steps outlast the timeout', () => {
     vi.useFakeTimers();
     const stuck = deferred();
     onShutdown(logger, [{ name: 'http', close: () => stuck.promise }], 500);

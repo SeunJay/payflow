@@ -16,9 +16,7 @@ const health = startHealthServer(config.WORKER_PORT, [
   { name: 'valkey', check: valkey.ping },
   {
     name: 'relay',
-    check: async () => {
-      if (!relay.isRunning()) throw new Error('relay loop stopped');
-    },
+    check: () => (relay.isRunning() ? Promise.resolve() : Promise.reject(new Error('relay loop stopped'))),
   },
 ]);
 health.on('listening', () => logger.info({ port: config.WORKER_PORT }, 'worker health listening'));

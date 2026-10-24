@@ -75,6 +75,7 @@ describe('healthRouter', () => {
   });
 
   it('reports a non Error rejection as text', async () => {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- a non Error rejection is the case under test
     const url = await serve([{ name: 'odd', check: () => Promise.reject('just a string') }]);
 
     const body = (await (await fetch(`${url}/ready`)).json()) as Record<string, unknown>;

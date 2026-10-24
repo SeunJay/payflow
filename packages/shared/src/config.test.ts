@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { z } from 'zod';
 import { loadConfig, logLevel, port, url } from './config.ts';
 
@@ -9,8 +9,8 @@ const schema = z.object({
 });
 
 describe('loadConfig', () => {
-  let exit: ReturnType<typeof vi.spyOn>;
-  let stderr: ReturnType<typeof vi.spyOn>;
+  let exit: MockInstance<typeof process.exit>;
+  let stderr: MockInstance<typeof console.error>;
 
   beforeEach(() => {
     // Throw instead of exiting so the test can see the call and the code stops there.

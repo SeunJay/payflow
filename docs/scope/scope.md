@@ -47,7 +47,7 @@ Decide the git workflow (branching model, commit message style, how changes reac
 spec [0002](../specs/0002-git-workflow.md)
 - [x] Decide the git workflow (spec): `/architect git workflow`
 - [ ] Capture conventions + tooling choices: `/audit`
-- [ ] Install the tooling: `/develop tooling`
+- [x] Install the tooling: `/develop tooling`
 - [ ] Check it runs clean: `/test`
 
 ### 3. Ledger data model · needs a decision · GA

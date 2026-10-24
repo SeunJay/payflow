@@ -69,7 +69,7 @@ describe('startRelayLoop', () => {
     await vi.advanceTimersByTimeAsync(200);
 
     expect(error).toHaveBeenCalledWith(
-      expect.objectContaining({ err: expect.objectContaining({ message: 'outbox claim failed' }) }),
+      expect.objectContaining({ err: expect.objectContaining({ message: 'outbox claim failed' }) as unknown }),
       'relay tick failed',
     );
     expect(tick).toHaveBeenCalledTimes(2);

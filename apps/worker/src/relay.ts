@@ -13,7 +13,7 @@ export function startRelayLoop(options: {
   tick?: () => Promise<void>;
 }): RelayLoop {
   const intervalMs = options.intervalMs ?? 1_000;
-  const tick = options.tick ?? (async () => {});
+  const tick = options.tick ?? (() => Promise.resolve());
   let running = true;
   let current: Promise<void> = Promise.resolve();
   let timer: NodeJS.Timeout | undefined;
