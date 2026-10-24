@@ -1,7 +1,7 @@
 # 0002. Branch per feature through GitHub pull requests, squash merged, gated by local hooks and CI
 
 **Date**: 2026-10-24
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
