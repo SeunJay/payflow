@@ -1,0 +1,24 @@
+{
+  "name": "@payflow/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@testcontainers/postgresql": "^12.2.1",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:",
+    "testcontainers": "^12.2.1",
+    "vitest": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "typescript": "catalog:"
+  }
+}

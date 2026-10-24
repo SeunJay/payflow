@@ -1,0 +1,17 @@
+node_modules/
+.env
+*.log
+.DS_Store
+
+# Build and test output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Env files: only the example is committed
+.env.*
+!.env.example
+
+# Local agent files
+.claude/settings.local.json
+docs/.agent-cache/

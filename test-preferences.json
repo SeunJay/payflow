@@ -1,0 +1,9 @@
+{
+  "tool": "vitest",
+  "gate": null,
+  "additionalTools": ["testcontainers", "@testcontainers/postgresql"],
+  "e2eTool": "none",
+  "testDir": "beside the source",
+  "filePattern": "*.test.ts (unit), *.int.test.ts (integration, real Postgres and Valkey containers)",
+  "packageManager": "pnpm"
+}

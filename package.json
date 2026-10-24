@@ -1,0 +1,22 @@
+{
+  "name": "payflow-lab",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "up": "docker compose up -d --wait",
+    "down": "docker compose down",
+    "db:migrate": "pnpm run db:migrate:core && pnpm run db:migrate:sim",
+    "db:migrate:core": "pnpm --filter @payflow/core db:migrate",
+    "db:migrate:sim": "pnpm --filter @payflow/simulator db:migrate",
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.5"
+  }
+}

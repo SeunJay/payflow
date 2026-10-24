@@ -1,0 +1,23 @@
+{
+  "name": "@payflow/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../../.env src/main.ts",
+    "start": "tsx --env-file=../../.env src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@payflow/core": "workspace:*",
+    "@payflow/provider-contract": "workspace:*",
+    "@payflow/shared": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@payflow/test-utils": "workspace:*",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

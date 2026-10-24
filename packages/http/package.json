@@ -1,0 +1,23 @@
+{
+  "name": "@payflow/http",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@payflow/shared": "workspace:*",
+    "express": "catalog:",
+    "pino-http": "catalog:"
+  },
+  "devDependencies": {
+    "@payflow/test-utils": "workspace:*",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
