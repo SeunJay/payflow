@@ -7,6 +7,7 @@
     "node": ">=24 <25"
   },
   "scripts": {
+    "prepare": "sh scripts/prepare.sh",
     "up": "docker compose up -d --wait",
     "down": "docker compose down",
     "db:migrate": "pnpm run db:migrate:core && pnpm run db:migrate:sim",
@@ -14,9 +15,23 @@
     "db:migrate:sim": "pnpm --filter @payflow/simulator db:migrate",
     "dev": "pnpm --parallel --filter \"./apps/*\" dev",
     "typecheck": "pnpm -r typecheck",
-    "test": "vitest"
+    "lint": "eslint .",
+    "lint:deps": "depcruise apps packages",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest",
+    "test:unit": "vitest run --project unit",
+    "test:int": "vitest run --project integration"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "dependency-cruiser": "^18.7.0",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "lefthook": "^2.2.2",
+    "prettier": "^3.9.10",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-eslint": "^8.72.0",
     "vitest": "^5.0.5"
   }
 }

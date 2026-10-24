@@ -14,7 +14,7 @@ _Learning companion: [docs/learning/concepts.md](../learning/concepts.md) explai
 | # | Feature | Phase | Status |
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
-| 2 | Coding standards & tooling | Foundation | planned |
+| 2 | Coding standards & tooling | Foundation | in-progress |
 | 3 | Ledger data model | Foundation | planned |
 | 4 | Sign up, log in, and a funded wallet | Slice 1 | planned |
 | 5 | Peer transfers with overspend protection | Slice 2 | planned |
@@ -41,7 +41,7 @@ spec [0001](../specs/0001-stack-architecture/index.md) · code in `apps/`, `pack
 - [x] Scaffold from the decision: `/develop stack & architecture`
 - [x] Smoke check it runs: `/test`
 
-### 2. Coding standards & tooling
+### 2. Coding standards & tooling · in-progress
 Decide the git workflow (branching model, commit message style, how changes reach `main`, and what checks gate a merge), then capture conventions, then install lint, format, type strictness, and pre commit checks from the real scaffolded project, including a way to run tests against a real database.
 **Done when:** the git workflow is recorded in a spec and in root `AGENTS.md` under `## Git`, root `AGENTS.md` reflects the real stack, and lint, format, and the test runner run clean.
 spec [0002](../specs/0002-git-workflow.md)

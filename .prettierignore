@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+**/migrations/
+coverage/
+# Vendored agent skills and hand written docs (tables and prose stay as written)
+.claude/
+*.md

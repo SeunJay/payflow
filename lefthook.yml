@@ -1,0 +1,28 @@
+# Local gates from spec 0002 (docs/specs/0002-git-workflow.md, "Gates").
+# Installed by `pnpm install` through the root `prepare` script.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: no-commit-on-main
+      run: sh scripts/no-commit-on-main.sh
+    - name: gitleaks
+      run: sh scripts/gitleaks-staged.sh
+    # Format first, then lint the formatted files
+    - name: format-and-lint
+      group:
+        piped: true
+        jobs:
+          - name: format
+            glob: '*.{ts,js,cjs,json,yml,yaml}'
+            run: pnpm exec prettier --write --ignore-unknown {staged_files}
+            stage_fixed: true
+          - name: lint
+            glob: '*.{ts,js,cjs}'
+            run: pnpm exec eslint --no-warn-ignored {staged_files}
+
+pre-push:
+  jobs:
+    - name: guard-and-check
+      run: sh scripts/pre-push.sh
+      use_stdin: true

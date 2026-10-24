@@ -1,0 +1,24 @@
+# The PR title becomes the squash commit on main, so it must be a Conventional
+# Commit header (spec 0002). A separate workflow, so editing a title does not
+# rerun or cancel the suite.
+name: pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check the title
+        env:
+          # Passed through env, never inlined into the script, so a title cannot inject shell
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: sh scripts/check-pr-title.sh "$PR_TITLE"

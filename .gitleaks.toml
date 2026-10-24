@@ -1,0 +1,10 @@
+# Secret scanning config for the pre-commit hook and the CI `secrets` job.
+# Starts from gitleaks' default rules.
+[extend]
+useDefault = true
+
+# .env.example is committed on purpose; its passwords are local development
+# values for the Docker containers, not real secrets.
+[[allowlists]]
+description = "Local development passwords in .env.example"
+paths = ['''^\.env\.example$''']

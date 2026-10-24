@@ -4,11 +4,24 @@ packages:
 
 allowBuilds:
   esbuild: true
+  # Optional native helpers pulled in by Testcontainers; not needed
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
+  # The binary comes from its per platform package; `prepare` installs the hooks
+  lefthook: false
+
+# dependency-cruiser looks up `typescript` without declaring it; this hands it the
+# root TS 6 API (TS 7 has no JS compiler API yet), like typescript-eslint
+packageExtensions:
+  dependency-cruiser:
+    peerDependencies:
+      typescript: '>=2.0.0 <7.0.0'
 
 catalog:
-  "@types/express": ^5.0.6
-  "@types/node": ^24.19.2
-  "@types/pg": ^8.23.1
+  '@types/express': ^5.0.6
+  '@types/node': ^24.19.2
+  '@types/pg': ^8.23.1
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.4
   express: ^5.3.0
