@@ -18,5 +18,8 @@ export function withTx<T>(
   fn: (tx: Tx) => Promise<T>,
   options: { isolationLevel?: IsolationLevel } = {},
 ): Promise<T> {
-  return db.transaction((tx) => fn(tx as Tx), options.isolationLevel ? { isolationLevel: options.isolationLevel } : undefined);
+  return db.transaction(
+    (tx) => fn(tx as Tx),
+    options.isolationLevel ? { isolationLevel: options.isolationLevel } : undefined,
+  );
 }

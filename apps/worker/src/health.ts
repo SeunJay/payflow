@@ -18,7 +18,9 @@ export function startHealthServer(port: number, checks: ReadinessCheck[], timeou
         try {
           await Promise.race([
             check(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error(`timed out after ${timeoutMs}ms`)), timeoutMs).unref()),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error(`timed out after ${timeoutMs}ms`)), timeoutMs).unref(),
+            ),
           ]);
           return { name, ok: true };
         } catch (err) {

@@ -19,6 +19,9 @@ const server = app.listen(config.SIMULATOR_PORT, () => {
 });
 
 onShutdown(logger, [
-  { name: 'http', close: () => new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))) },
+  {
+    name: 'http',
+    close: () => new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))),
+  },
   { name: 'postgres', close: db.close },
 ]);

@@ -15,7 +15,14 @@ export type Problem = {
 export const PROBLEM_CONTENT_TYPE = 'application/problem+json';
 
 export const notFound: RequestHandler = (req, _res, next) => {
-  next(new AppError({ code: 'not_found', status: 404, title: 'Not Found', detail: `No route for ${req.method} ${req.path}` }));
+  next(
+    new AppError({
+      code: 'not_found',
+      status: 404,
+      title: 'Not Found',
+      detail: `No route for ${req.method} ${req.path}`,
+    }),
+  );
 };
 
 /**
@@ -30,7 +37,13 @@ export const problemHandler: ErrorRequestHandler = (err, req, res, _next) => {
   } else if (isBodyParserError(err)) {
     // A JSON parse message can quote the client's body, so it gets fixed text.
     const detail = err.type === 'entity.parse.failed' ? 'Request body is not valid JSON' : err.message;
-    problem = { type: 'about:blank', title: STATUS_CODES[err.status] ?? 'Bad Request', status: err.status, code: 'invalid_body', detail };
+    problem = {
+      type: 'about:blank',
+      title: STATUS_CODES[err.status] ?? 'Bad Request',
+      status: err.status,
+      code: 'invalid_body',
+      detail,
+    };
   } else {
     req.log.error({ err }, 'unhandled error');
     problem = { type: 'about:blank', title: 'Internal Server Error', status: 500, code: 'internal_error' };
@@ -46,5 +59,7 @@ type BodyParserError = { type: string; status: number; message: string; expose: 
 function isBodyParserError(err: unknown): err is BodyParserError {
   if (typeof err !== 'object' || err === null) return false;
   const e = err as Partial<Record<keyof BodyParserError, unknown>>;
-  return typeof e.type === 'string' && e.expose === true && typeof e.status === 'number' && e.status >= 400 && e.status < 500;
+  return (
+    typeof e.type === 'string' && e.expose === true && typeof e.status === 'number' && e.status >= 400 && e.status < 500
+  );
 }

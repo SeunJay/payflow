@@ -27,5 +27,8 @@ onShutdown(logger, [
   { name: 'relay', close: relay.stop },
   { name: 'postgres', close: db.close },
   { name: 'valkey', close: valkey.close },
-  { name: 'health', close: () => new Promise((resolve, reject) => health.close((err) => (err ? reject(err) : resolve()))) },
+  {
+    name: 'health',
+    close: () => new Promise((resolve, reject) => health.close((err) => (err ? reject(err) : resolve()))),
+  },
 ]);

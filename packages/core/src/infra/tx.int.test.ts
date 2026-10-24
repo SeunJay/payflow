@@ -52,16 +52,19 @@ describe('withTx', () => {
     expect(level).toBe('read committed');
   });
 
-  it.each(['repeatable read', 'serializable'] as const)('opens the transaction at %s when asked', async (isolationLevel) => {
-    const level = await withTx(
-      handle.db,
-      async (tx) => {
-        const rows = await tx.execute<{ transaction_isolation: string }>(sql`show transaction_isolation`);
-        return rows.rows[0]?.transaction_isolation;
-      },
-      { isolationLevel },
-    );
+  it.each(['repeatable read', 'serializable'] as const)(
+    'opens the transaction at %s when asked',
+    async (isolationLevel) => {
+      const level = await withTx(
+        handle.db,
+        async (tx) => {
+          const rows = await tx.execute<{ transaction_isolation: string }>(sql`show transaction_isolation`);
+          return rows.rows[0]?.transaction_isolation;
+        },
+        { isolationLevel },
+      );
 
-    expect(level).toBe(isolationLevel);
-  });
+      expect(level).toBe(isolationLevel);
+    },
+  );
 });

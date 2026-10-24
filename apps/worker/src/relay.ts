@@ -7,7 +7,11 @@ export type RelayLoop = { isRunning: () => boolean; stop: () => Promise<void> };
  * the claim (FOR UPDATE SKIP LOCKED), publish, mark sent cycle. Ticks never
  * overlap, and `stop` waits for the current one to finish.
  */
-export function startRelayLoop(options: { logger: Logger; intervalMs?: number; tick?: () => Promise<void> }): RelayLoop {
+export function startRelayLoop(options: {
+  logger: Logger;
+  intervalMs?: number;
+  tick?: () => Promise<void>;
+}): RelayLoop {
   const intervalMs = options.intervalMs ?? 1_000;
   const tick = options.tick ?? (async () => {});
   let running = true;

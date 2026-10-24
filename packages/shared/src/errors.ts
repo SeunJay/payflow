@@ -7,15 +7,9 @@ export class AppError extends Error {
   readonly status: number;
   readonly detail: string | undefined;
 
-  constructor(options: {
-    code: string;
-    status: number;
-    title: string;
-    detail?: string;
-    cause?: unknown;
-  }) {
+  constructor(options: { code: string; status: number; title: string; detail?: string; cause?: unknown }) {
     super(options.title, { cause: options.cause });
-    this.name = "AppError";
+    this.name = 'AppError';
     this.code = options.code;
     this.status = options.status;
     this.detail = options.detail;

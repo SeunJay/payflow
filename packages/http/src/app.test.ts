@@ -16,7 +16,11 @@ describe('createHttpApp', () => {
   });
 
   async function serve(options: { readiness?: ReadinessCheck[]; mount?: (app: Express) => void } = {}) {
-    const app = createHttpApp({ logger, readiness: options.readiness ?? [], ...(options.mount ? { mount: options.mount } : {}) });
+    const app = createHttpApp({
+      logger,
+      readiness: options.readiness ?? [],
+      ...(options.mount ? { mount: options.mount } : {}),
+    });
     server = await startServer(app);
     return server.url;
   }

@@ -42,7 +42,12 @@ describe('Problem Details errors', () => {
   it('turns a thrown AppError into its own problem', async () => {
     const url = await serve((app) => {
       app.get('/v1/wallets/:id', () => {
-        throw new AppError({ code: 'wallet_not_found', status: 404, title: 'Wallet not found', detail: 'No wallet w_1' });
+        throw new AppError({
+          code: 'wallet_not_found',
+          status: 404,
+          title: 'Wallet not found',
+          detail: 'No wallet w_1',
+        });
       });
     });
 
@@ -143,7 +148,11 @@ describe('Problem Details errors', () => {
   it('keeps a body parser server error (not exposed) a plain 500 with its message hidden', async () => {
     const url = await serve((app) => {
       app.get('/v1/stream', () => {
-        throw Object.assign(new Error('stream encoding should not be set'), { type: 'stream.encoding.set', status: 500, expose: false });
+        throw Object.assign(new Error('stream encoding should not be set'), {
+          type: 'stream.encoding.set',
+          status: 500,
+          expose: false,
+        });
       });
     });
 

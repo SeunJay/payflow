@@ -41,9 +41,9 @@ describe('loadConfig', () => {
   });
 
   it('prints every problem at once and exits 1 on bad config (DW-3)', () => {
-    expect(() =>
-      loadConfig(schema, { DATABASE_URL: 'nope', API_PORT: '70000', LOG_LEVEL: 'loud' }),
-    ).toThrow('process.exit(1)');
+    expect(() => loadConfig(schema, { DATABASE_URL: 'nope', API_PORT: '70000', LOG_LEVEL: 'loud' })).toThrow(
+      'process.exit(1)',
+    );
 
     expect(exit).toHaveBeenCalledWith(1);
     const printed = String(stderr.mock.calls[0]?.[0]);

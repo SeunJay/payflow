@@ -60,14 +60,19 @@ describe('docker/postgres-init.sh', () => {
 });
 
 describe('migrations', () => {
-  it.each(['payflow', 'simulator'] as const)('leaves drizzle.__drizzle_migrations in the %s database (DW-1)', async (database) => {
-    const client = new pg.Client({ connectionString: testUrls()[database] });
-    await client.connect();
-    try {
-      const result = await client.query<{ table: string | null }>(`select to_regclass('drizzle.__drizzle_migrations')::text as table`);
-      expect(result.rows[0]?.table).toBe('drizzle.__drizzle_migrations');
-    } finally {
-      await client.end();
-    }
-  });
+  it.each(['payflow', 'simulator'] as const)(
+    'leaves drizzle.__drizzle_migrations in the %s database (DW-1)',
+    async (database) => {
+      const client = new pg.Client({ connectionString: testUrls()[database] });
+      await client.connect();
+      try {
+        const result = await client.query<{ table: string | null }>(
+          `select to_regclass('drizzle.__drizzle_migrations')::text as table`,
+        );
+        expect(result.rows[0]?.table).toBe('drizzle.__drizzle_migrations');
+      } finally {
+        await client.end();
+      }
+    },
+  );
 });

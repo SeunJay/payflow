@@ -69,7 +69,9 @@ describe('healthRouter', () => {
     const res = await fetch(`${url}/ready`);
 
     expect(res.status).toBe(503);
-    expect(((await res.json()) as { checks: unknown }).checks).toEqual([{ name: 'postgres', ok: false, error: 'timed out after 50ms' }]);
+    expect(((await res.json()) as { checks: unknown }).checks).toEqual([
+      { name: 'postgres', ok: false, error: 'timed out after 50ms' },
+    ]);
   });
 
   it('reports a non Error rejection as text', async () => {

@@ -69,7 +69,9 @@ describe('startHealthServer', () => {
     const res = await fetch(`${url}/ready`);
 
     expect(res.status).toBe(503);
-    expect(((await res.json()) as { checks: unknown }).checks).toEqual([{ name: 'valkey', ok: false, error: 'timed out after 50ms' }]);
+    expect(((await res.json()) as { checks: unknown }).checks).toEqual([
+      { name: 'valkey', ok: false, error: 'timed out after 50ms' },
+    ]);
   });
 
   it('answers an unknown path with 404', async () => {
