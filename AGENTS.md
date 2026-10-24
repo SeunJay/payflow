@@ -17,12 +17,17 @@ A simulated payment platform for learning how fintech backends keep money correc
 ## Commands
 
 ```bash
-pnpm install                     # Node 24 first: nvm use
+cp .env.example .env             # once; every app and migration reads it
+pnpm install                     # Node 24 first: nvm use. Also installs the git hooks (Lefthook)
 pnpm run up && pnpm db:migrate   # Postgres + Valkey containers, then both migrations
 pnpm dev                         # api :3000, worker :3100, simulator :4000
 pnpm typecheck                   # the passing build (tsc --noEmit per package)
-pnpm test run                    # unit + integration; --project unit skips Docker
+pnpm lint && pnpm lint:deps      # ESLint (typed), then dependency-cruiser import rules
+pnpm format                      # Prettier write; format:check is the CI form
+pnpm test:unit                   # no Docker; test:int runs real containers; plain `pnpm test` watches
 ```
+
+Needs Docker (integration tests) and the gitleaks binary (macOS: brew install gitleaks); without it the pre-commit hook refuses commits.
 
 ## Specs
 
@@ -41,7 +46,9 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title.md` (or `NNNN-title/inde
 
 ## Tooling
 
-Chosen here, installed by `/develop tooling`: ESLint flat config + typescript-eslint `strictTypeChecked` and `stylisticTypeChecked`; Prettier (single quotes, semicolons, width 120, trailing commas); dependency-cruiser enforcing spec 0001's import rules and no cycles; hooks and CI per [spec 0002](docs/specs/0002-git-workflow.md). Rollout: one `chore: apply prettier formatting` commit, then a lint fix commit.
+ESLint flat config (`eslint.config.js`) with typescript-eslint `strictTypeChecked` + `stylisticTypeChecked`, tuned to this code: `type` over `interface`, no default exports outside `*.config.*`, no classes but `AppError`. Prettier (single quotes, semicolons, width 120, trailing commas; Markdown is not formatted). dependency-cruiser (`.dependency-cruiser.cjs`) enforces spec 0001's import rules and no cycles. Lefthook hooks, GitHub Actions, Dependabot, and gitleaks per [spec 0002](docs/specs/0002-git-workflow.md).
+
+Gotcha: typescript-eslint and dependency-cruiser cannot load TypeScript 7 yet, so the root `typescript` is the TS 6 API (`@typescript/typescript6`, plus a `packageExtensions` entry in `pnpm-workspace.yaml`). Packages still typecheck with TS 7. Remove both once typescript-eslint supports TS 7.
 
 ## Git
 
