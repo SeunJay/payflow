@@ -7,6 +7,7 @@ if (!url) throw new Error('DATABASE_URL is not set');
 // `drizzle-kit push` is not used in this repo.
 export default defineConfig({
   dialect: 'postgresql',
+  casing: 'snake_case',
   schema: './src/modules/*/schema.ts',
   out: './migrations',
   dbCredentials: { url },

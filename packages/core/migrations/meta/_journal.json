@@ -1,1 +1,27 @@
-{"version":"7","dialect":"postgresql","entries":[]}
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792941231315,
+      "tag": "0000_ledger_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792941237623,
+      "tag": "0001_ledger_seed_test_funding",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792941351124,
+      "tag": "0002_ledger_guards",
+      "breakpoints": true
+    }
+  ]
+}

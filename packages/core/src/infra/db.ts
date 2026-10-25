@@ -23,7 +23,7 @@ export function createDb(options: { url: string; logger: Logger; max?: number })
   const pool = new pg.Pool({ connectionString: options.url, max: options.max ?? 10 });
   pool.on('error', (err) => options.logger.error({ err }, 'idle postgres client error'));
 
-  const db = drizzle({ client: pool, schema });
+  const db = drizzle({ client: pool, schema, casing: 'snake_case' });
   return {
     db,
     pool,
