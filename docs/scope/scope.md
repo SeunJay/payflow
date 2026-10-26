@@ -16,7 +16,7 @@ _Learning companion: [docs/learning/concepts.md](../learning/concepts.md) explai
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Ledger data model | Foundation | done |
-| 4 | Sign up, log in, and a funded wallet | Slice 1 | in-progress |
+| 4 | Sign up, log in, and a funded wallet | Slice 1 | done |
 | 5 | Peer transfers with overspend protection | Slice 2 | planned |
 | 6 | Idempotent transfer requests | Slice 3 | planned |
 | 7 | Payment state machine | Slice 4 | planned |
@@ -67,7 +67,7 @@ spec [0003](../specs/0003-ledger-data-model/index.md) · code in `packages/core/
 
 ## Phase 1: Money core
 
-### 4. Sign up, log in, and a funded wallet · in-progress · GA
+### 4. Sign up, log in, and a funded wallet · done · GA
 The walking skeleton. Real sign up and log in, a wallet created for each new user, an instant internal test deposit that posts balanced entries, and API reads for balance and history. No provider, no transfers yet.
 **Done when:** a new user can sign up, log in, receive a ₦10,000 test deposit, and read a ₦10,000 balance with one history item backed by two balanced entries; calls without a valid session are rejected.
 spec [0004](../specs/0004-signup-login-funded-wallet/index.md) · code in `packages/core/src/modules/identity/`, `packages/core/src/modules/wallets/`, `apps/api/src/`
@@ -79,8 +79,8 @@ spec [0004](../specs/0004-signup-login-funded-wallet/index.md) · code in `packa
   - [x] Move the API into the [spec 0005](../specs/0005-api-feature-folder-layout.md) feature layout (routes, controllers, use case services, lint rules), behavior unchanged (AC-1 to AC-15 still green)
 - [x] Verify it: `/check verify sign up, log in, and a funded wallet`
 - [x] Test it: `/test sign up, log in, and a funded wallet`
-- [ ] Review it (fresh model): `/check review sign up, log in, and a funded wallet`
-- [ ] Document it: `/document sign up, log in, and a funded wallet`
+- [x] Review it (fresh model): `/check review sign up, log in, and a funded wallet`
+- [x] Document it: `/document sign up, log in, and a funded wallet`
 
 ### 5. Peer transfers with overspend protection · needs a decision
 Move money between two users' wallets in one atomic database transaction, with concurrency control so the same balance can never be spent twice.

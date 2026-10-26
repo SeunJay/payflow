@@ -1,7 +1,7 @@
 # 0004. Email and password accounts with short JWT access cookies, rotating refresh sessions, and a wallet funded at sign up
 
 **Date**: 2026-10-26
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
