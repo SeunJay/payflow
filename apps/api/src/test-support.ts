@@ -6,6 +6,7 @@ import { createAuthContext, createDb, type AuthContext, type DbHandle } from '@p
 import { createLogger, type Logger } from '@payflow/shared';
 import { createTestDatabase, startServer } from '@payflow/test-utils';
 import { buildApp } from './app.ts';
+import type { FeatureDeps } from './deps.ts';
 
 export const TEST_JWT_SECRET = 'test-only-jwt-secret-0123456789abcdef';
 export const PASSWORD = 'correct horse battery';
@@ -53,6 +54,33 @@ export async function startTestApi(): Promise<TestApi> {
     logs,
     close: async () => {
       await server.close();
+      await handle.close();
+      await database.drop();
+    },
+  };
+}
+
+export type TestDeps = FeatureDeps & {
+  readonly pool: DbHandle['pool'];
+  readonly close: () => Promise<void>;
+};
+
+/** Feature deps on their own migrated database with no server, for calling a feature's service directly. */
+export async function createTestDeps(): Promise<TestDeps> {
+  const database = await createTestDatabase();
+  const handle = createDb({ url: database.url, logger: createLogger({ name: 'api-test', level: 'silent' }) });
+  const auth = await createAuthContext({
+    jwtSecret: TEST_JWT_SECRET,
+    accessTtlSeconds: 900,
+    refreshTtlSeconds: 604_800,
+    bcryptCost: 4,
+  });
+  return {
+    db: handle.db,
+    pool: handle.pool,
+    auth,
+    cookieSecure: false,
+    close: async () => {
       await handle.close();
       await database.drop();
     },

@@ -78,7 +78,7 @@ spec [0004](../specs/0004-signup-login-funded-wallet/index.md) · code in `packa
   - [x] Refresh rotation, reuse detection, and log out, with the refresh race test and auth event logs (AC-10, AC-11, AC-12, AC-13, AC-14)
   - [x] Move the API into the [spec 0005](../specs/0005-api-feature-folder-layout.md) feature layout (routes, controllers, use case services, lint rules), behavior unchanged (AC-1 to AC-15 still green)
 - [x] Verify it: `/check verify sign up, log in, and a funded wallet`
-- [ ] Test it: `/test sign up, log in, and a funded wallet`
+- [x] Test it: `/test sign up, log in, and a funded wallet`
 - [ ] Review it (fresh model): `/check review sign up, log in, and a funded wallet`
 - [ ] Document it: `/document sign up, log in, and a funded wallet`
 
