@@ -57,11 +57,13 @@ export type HeldTx<T> = {
   readonly worked: Promise<T>;
   /** Lets the unit of work commit and settles when it has. */
   readonly commit: () => Promise<T>;
+  /** Rolls the unit of work back instead, releasing its locks, and settles when it has. */
+  readonly rollback: () => Promise<void>;
 };
 
-/** Runs `work` in a unit of work and keeps it open (locks held) until `commit` is called. */
+/** Runs `work` in a unit of work and keeps it open (locks held) until `commit` or `rollback` is called. */
 export function holdOpen<T>(db: Db, work: (tx: Tx) => Promise<T>): HeldTx<T> {
-  const gate = Promise.withResolvers<undefined>();
+  const gate = Promise.withResolvers<'commit' | 'rollback'>();
   const worked = Promise.withResolvers<T>();
   const committed = withTx(db, async (tx) => {
     const value = await work(tx).catch((err: unknown) => {
@@ -69,7 +71,7 @@ export function holdOpen<T>(db: Db, work: (tx: Tx) => Promise<T>): HeldTx<T> {
       throw err;
     });
     worked.resolve(value);
-    await gate.promise;
+    if ((await gate.promise) === 'rollback') throw new Error('held unit of work rolled back');
     return value;
   });
   // Marked handled here; callers still see the rejection when they await.
@@ -78,8 +80,12 @@ export function holdOpen<T>(db: Db, work: (tx: Tx) => Promise<T>): HeldTx<T> {
   return {
     worked: worked.promise,
     commit: () => {
-      gate.resolve(undefined);
+      gate.resolve('commit');
       return committed;
+    },
+    rollback: async () => {
+      gate.resolve('rollback');
+      await committed.catch(() => undefined);
     },
   };
 }

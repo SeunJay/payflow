@@ -65,6 +65,8 @@ export async function reverse(tx: Tx, input: ReverseInput): Promise<PostedTransa
     .for('update');
   if (!original) throw new Error(`ledger: unknown transaction ${parsed.transactionId}`);
   if (original.kind === 'reversal') throw new Error(`ledger: transaction ${original.id} is a reversal`);
+  // Again under the lock: a concurrent replay of this key may have committed while we waited.
+  await assertKeyUnused(tx, parsed.postingKey);
 
   const [existing] = await tx
     .select({ id: ledgerTransactions.id })
@@ -132,6 +134,9 @@ async function writePosting(tx: Tx, posting: Posting): Promise<PostedTransaction
     .orderBy(ledgerAccounts.id)
     .for('update');
   if (locked.length !== amounts.size) throw new Error('ledger: posting names an unknown account');
+  // Again under the locks: a concurrent replay on these accounts may have committed while we waited,
+  // and its key must win over the funds check (AC-7).
+  await assertKeyUnused(tx, posting.postingKey);
 
   const sums = new Map<string, bigint>();
   for (const account of locked) sums.set(account.currency, (sums.get(account.currency) ?? 0n) + amountOf(account.id));

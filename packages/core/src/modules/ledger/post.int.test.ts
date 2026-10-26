@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
 import { AppError, createLogger } from '@payflow/shared';
 import { createTestDatabase, type TestDatabase } from '@payflow/test-utils';
 import { createDb, type DbHandle } from '../../infra/db.ts';
 import { withTx } from '../../infra/tx.ts';
-import { getBalance, getSystemAccount } from './accounts.ts';
+import { getBalance, getSystemAccount, openAccount } from './accounts.ts';
 import { listEntries } from './history.ts';
-import { post, type PostInput } from './post.ts';
+import { post, reverse, type PostInput } from './post.ts';
+import { ledgerEntries, ledgerTransactions } from './schema.ts';
 import {
   countTransactions,
   DEPOSIT,
@@ -79,6 +81,105 @@ describe('ledger post', () => {
     expect(ids).toEqual([...ids].sort());
     expect(posted).toMatchObject({ kind: 'test_deposit', metadata: {}, reversesTransactionId: null });
     expect(posted.createdAt).toBeInstanceOf(Date);
+  });
+
+  it('stores the trimmed key and description, and kind, metadata, and raw amounts as given', async () => {
+    const funding = await getSystemAccount(db, 'test_funding');
+    const wallet = await openWallet(db);
+    const key = `trim:${randomUUID()}`;
+    const metadata = { source: 'test', nested: { flags: [true, null, 3] } };
+
+    const posted = await withTx(db, (tx) =>
+      post(tx, {
+        postingKey: `  ${key}  `,
+        kind: 'test_deposit',
+        description: '  Padded deposit  ',
+        metadata,
+        entries: depositEntries(funding.id, wallet.id, 75n),
+      }),
+    );
+
+    const [row] = await db.select().from(ledgerTransactions).where(eq(ledgerTransactions.id, posted.id));
+    expect(row).toEqual({
+      id: posted.id,
+      postingKey: key,
+      kind: 'test_deposit',
+      description: 'Padded deposit',
+      metadata,
+      reversesTransactionId: null,
+      createdAt: posted.createdAt,
+    });
+    const entries = await db.select().from(ledgerEntries).where(eq(ledgerEntries.transactionId, posted.id));
+    expect(entries.map((e) => [e.accountId, e.amount, e.currency]).sort()).toEqual(
+      [
+        [funding.id, 75n, 'NGN'],
+        [wallet.id, -75n, 'NGN'],
+      ].sort(),
+    );
+  });
+
+  it('moves each balance on its normal side: +10 on an asset and -10 on a liability both raise them by 10', async () => {
+    const asset = await withTx(db, (tx) =>
+      openAccount(tx, { type: 'asset', currency: 'NGN', code: `asset_${randomUUID().slice(0, 8)}` }),
+    );
+    const wallet = await openWallet(db);
+
+    const posted = await withTx(db, (tx) =>
+      post(tx, {
+        postingKey: `sign:${randomUUID()}`,
+        kind: 'test_deposit',
+        description: 'Sign check',
+        entries: [
+          { accountId: asset.id, amount: 10n },
+          { accountId: wallet.id, amount: -10n },
+        ],
+      }),
+    );
+
+    expect((await getBalance(db, asset.id)).balance).toBe(10n);
+    expect((await getBalance(db, wallet.id)).balance).toBe(10n);
+    expect(posted.entries.map((e) => e.balanceAfter)).toEqual([10n, 10n]);
+  });
+
+  it('numbers an account entries 1, 2, 3 with balance_after tracking each step (AC-5)', async () => {
+    const wallet = await openWallet(db);
+
+    const steps = [await fund(db, wallet.id, 100n), await fund(db, wallet.id, 50n), await fund(db, wallet.id, 25n)];
+
+    expect(steps.map((p) => p.entries.find((e) => e.accountId === wallet.id))).toEqual([
+      expect.objectContaining({ seq: 1n, balanceAfter: 100n }),
+      expect.objectContaining({ seq: 2n, balanceAfter: 150n }),
+      expect.objectContaining({ seq: 3n, balanceAfter: 175n }),
+    ]);
+    expect((await getSystemAccount(db, 'test_funding')).lastSeq).toBeGreaterThanOrEqual(3n);
+  });
+
+  it('accepts an upper case account id and stores it lower case', async () => {
+    const funding = await getSystemAccount(db, 'test_funding');
+    const wallet = await openWallet(db);
+
+    const posted = await withTx(db, (tx) =>
+      post(tx, {
+        postingKey: `upper:${randomUUID()}`,
+        kind: 'test_deposit',
+        description: 'Upper case id',
+        entries: depositEntries(funding.id, wallet.id.toUpperCase(), 5n),
+      }),
+    );
+
+    expect(posted.entries.map((e) => e.accountId)).toContain(wallet.id);
+    expect((await getBalance(db, wallet.id)).balance).toBe(5n);
+  });
+
+  it('lets a system account go below zero (allow_negative) while a wallet may land exactly on zero', async () => {
+    const spender = await openWallet(db);
+    const payee = await openWallet(db);
+    await fund(db, spender.id, 40n);
+
+    await transfer(db, spender.id, payee.id, 40n);
+
+    expect((await getBalance(db, spender.id)).balance).toBe(0n);
+    expect((await getSystemAccount(db, 'test_funding')).balance).toBeLessThan(0n);
   });
 
   it('leaves no rows and no balance change when the caller rolls back (AC-5)', async () => {
@@ -266,6 +367,89 @@ describe('ledger post', () => {
       expect((await getBalance(db, c.id)).balance).toBe(50n);
       expect((await getBalance(db, d.id)).balance).toBe(0n);
       expect((await getBalance(db, b.id)).balance).toBe(50n);
+    });
+
+    it('answers a concurrent replay on the same accounts with 409, not 422, when the first post drained them', async () => {
+      const spender = await openWallet(db);
+      const payee = await openWallet(db);
+      await fund(db, spender.id, 50n);
+      const key = `race:${randomUUID()}`;
+
+      const first = holdOpen(db, (tx) => post(tx, transferInput(spender.id, payee.id, 50n, key)));
+      const winner = await first.worked;
+      // Same accounts, so the replay queues on the account locks and sees the drained balance once it gets them.
+      const replay = transfer(db, spender.id, payee.id, 50n, key);
+      await waitForLockWaiters(db, 1);
+      await first.commit();
+
+      await expect(replay).rejects.toMatchObject({
+        code: 'duplicate_posting',
+        detail: `Posting key ${key} already used by ledger transaction ${winner.id}`,
+      });
+      expect((await getBalance(db, spender.id)).balance).toBe(0n);
+      expect((await getBalance(db, payee.id)).balance).toBe(50n);
+    });
+
+    it('answers a concurrent replay that shares only one account with 409, not 422 (partial overlap)', async () => {
+      const [a, b, c] = await Promise.all([openWallet(db), openWallet(db), openWallet(db)]);
+      await fund(db, b.id, 50n);
+      const key = `race:${randomUUID()}`;
+
+      const first = holdOpen(db, (tx) => post(tx, transferInput(b.id, a.id, 50n, key)));
+      const winner = await first.worked;
+      // Shares only b, which the first post drains, so it queues on b's lock and would see 422 without the key recheck.
+      const replay = transfer(db, b.id, c.id, 50n, key);
+      await waitForLockWaiters(db, 1);
+      await first.commit();
+
+      await expect(replay).rejects.toMatchObject({
+        code: 'duplicate_posting',
+        detail: `Posting key ${key} already used by ledger transaction ${winner.id}`,
+      });
+      expect((await getBalance(db, c.id)).balance).toBe(0n);
+    });
+
+    it('answers a post that reuses a concurrent reversal key on shared accounts with 409, not 422', async () => {
+      const wallet = await openWallet(db);
+      const payee = await openWallet(db);
+      const deposit = await fund(db, wallet.id, 30n);
+      const key = `shared:${randomUUID()}`;
+
+      const first = holdOpen(db, (tx) =>
+        reverse(tx, { transactionId: deposit.id, postingKey: key, description: 'Reverse test deposit' }),
+      );
+      const reversal = await first.worked;
+      // The reversal empties the wallet, so without the key check under the lock this post would get 422.
+      const reuse = transfer(db, wallet.id, payee.id, 30n, key);
+      await waitForLockWaiters(db, 1);
+      await first.commit();
+
+      await expect(reuse).rejects.toMatchObject({
+        code: 'duplicate_posting',
+        detail: `Posting key ${key} already used by ledger transaction ${reversal.id}`,
+      });
+      expect((await getBalance(db, wallet.id)).balance).toBe(0n);
+      expect((await getBalance(db, payee.id)).balance).toBe(0n);
+    });
+
+    it('lets a concurrent replay go ahead on its own when the first post rolls back', async () => {
+      const spender = await openWallet(db);
+      const payee = await openWallet(db);
+      await fund(db, spender.id, 50n);
+      const key = `race:${randomUUID()}`;
+
+      const first = holdOpen(db, (tx) => post(tx, transferInput(spender.id, payee.id, 50n, key)));
+      await first.worked;
+      const replay = transfer(db, spender.id, payee.id, 50n, key);
+      await waitForLockWaiters(db, 1);
+      await first.rollback();
+
+      const posted = await replay;
+      expect(posted.postingKey).toBe(key);
+      expect((await getBalance(db, spender.id)).balance).toBe(0n);
+      expect((await getBalance(db, payee.id)).balance).toBe(50n);
+      const rows = await db.select().from(ledgerTransactions).where(eq(ledgerTransactions.postingKey, key));
+      expect(rows.map((row) => row.id)).toEqual([posted.id]);
     });
   });
 });
