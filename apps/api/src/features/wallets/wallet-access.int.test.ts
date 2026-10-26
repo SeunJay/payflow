@@ -10,7 +10,7 @@ import {
   startTestApi,
   type Session,
   type TestApi,
-} from './test-support.ts';
+} from '../../test-support.ts';
 
 describe('wallet reads and access tokens', () => {
   let api: TestApi;

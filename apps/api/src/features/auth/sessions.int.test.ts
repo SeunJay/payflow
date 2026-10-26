@@ -16,7 +16,7 @@ import {
   type TestApi,
   anyString,
   anyDate,
-} from './test-support.ts';
+} from '../../test-support.ts';
 
 type SessionRow = {
   current_token_hash: string;

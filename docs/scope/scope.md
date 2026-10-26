@@ -76,6 +76,7 @@ spec [0004](../specs/0004-signup-login-funded-wallet/index.md) · code in `packa
   - [x] Thin thread: schema, sign up with the funded wallet, log in, read ₦10,000, secrets redacted in logs (AC-1, AC-2, AC-5, AC-8, AC-14, AC-15)
   - [x] Input, errors, and authorization: JSON gate, validation, duplicate email race, invalid credentials, access token checks, history pagination, two user isolation (AC-3, AC-4, AC-6, AC-7, AC-8, AC-9)
   - [x] Refresh rotation, reuse detection, and log out, with the refresh race test and auth event logs (AC-10, AC-11, AC-12, AC-13, AC-14)
+  - [x] Move the API into the [spec 0005](../specs/0005-api-feature-folder-layout.md) feature layout (routes, controllers, use case services, lint rules), behavior unchanged (AC-1 to AC-15 still green)
 - [ ] Verify it: `/check verify sign up, log in, and a funded wallet`
 - [ ] Test it: `/test sign up, log in, and a funded wallet`
 - [ ] Review it (fresh model): `/check review sign up, log in, and a funded wallet`

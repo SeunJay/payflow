@@ -163,7 +163,7 @@ The row lock in step 2 is what makes AC-11's race deterministic: the second refr
 
 ### HTTP surface (`apps/api`)
 
-`apps/api/src/app.ts` exports `buildApp({ db, logger, config, auth, readiness })` returning the Express app (`readiness` is passed straight to `createHttpApp`: `main.ts` passes the Postgres and Valkey pings, tests pass `[]`, so tests need no Valkey), so integration tests run the real app against the per file test database through `startServer` and `fetch`. `main.ts` builds the deps and calls it. Routes live in `apps/api/src/routes/` (`auth.ts`, `me.ts`, `wallet.ts`), middleware in `src/middleware/` (`require-json.ts`, `require-auth.ts`), and cookie names and options in `src/cookies.ts`. `cookie-parser` is mounted in `buildApp` (not in the shared `@payflow/http` shell).
+`apps/api/src/app.ts` exports `buildApp({ db, logger, config, auth, readiness })` returning the Express app (`readiness` is passed straight to `createHttpApp`: `main.ts` passes the Postgres and Valkey pings, tests pass `[]`, so tests need no Valkey), so integration tests run the real app against the per file test database through `startServer` and `fetch`. `main.ts` builds the deps and calls it. Routes live in `apps/api/src/routes/` (`auth.ts`, `me.ts`, `wallet.ts`), middleware in `src/middleware/` (`require-json.ts`, `require-auth.ts`), and cookie names and options in `src/cookies.ts`. File locations follow [spec 0005](../0005-api-feature-folder-layout.md) from its migration on: the `auth`, `users`, and `wallets` features under `src/features/`, middleware and cookies under `src/http/`. `cookie-parser` is mounted in `buildApp` (not in the shared `@payflow/http` shell).
 
 | Endpoint | Method | Key inputs | Key outputs | Auth | Key errors |
 |---|---|---|---|---|---|

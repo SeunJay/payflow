@@ -59,6 +59,36 @@ module.exports = {
         pathNot: ['^packages/core/src/modules/$1/', '^packages/core/src/modules/[^/]+/(index|schema)\\.ts$'],
       },
     },
+    // The api feature layout (docs/specs/0005-api-feature-folder-layout.md, "Enforcement").
+    // Test files and test-support.ts are exempt: race tests call core inside held transactions.
+    {
+      name: 'api-features-isolated',
+      comment: 'An api feature never imports another feature; shared code goes in apps/api/src/http/',
+      severity: 'error',
+      from: { path: '^apps/api/src/features/([^/]+)/', pathNot: ['\\.test\\.ts$'] },
+      to: { path: '^apps/api/src/features/', pathNot: '^apps/api/src/features/$1/' },
+    },
+    {
+      name: 'api-features-through-index',
+      comment: 'Outside features/, the api reaches a feature only through its index.ts',
+      severity: 'error',
+      from: { path: '^apps/api/src/', pathNot: ['^apps/api/src/features/', '\\.test\\.ts$', '/test-support\\.ts$'] },
+      to: { path: '^apps/api/src/features/[^/]+/', pathNot: '^apps/api/src/features/[^/]+/index\\.ts$' },
+    },
+    {
+      name: 'api-controllers-and-routes-no-core-values',
+      comment: 'Controllers and routes import @payflow/core for types only; values come through their service',
+      severity: 'error',
+      from: { path: '^apps/api/src/features/[^/]+/[^/]+\\.(controller|routes)\\.ts$' },
+      to: { path: '^packages/core/', dependencyTypesNot: ['type-only'] },
+    },
+    {
+      name: 'api-services-no-http',
+      comment: 'A use case service knows nothing of Express, cookies, or the api http plumbing',
+      severity: 'error',
+      from: { path: '^apps/api/src/features/[^/]+/[^/]+\\.service\\.ts$' },
+      to: { path: ['node_modules/(express|cookie-parser)/', '^apps/api/src/http/'] },
+    },
     {
       name: 'test-utils-only-from-tests',
       severity: 'error',
@@ -75,7 +105,7 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '(^|/)(node_modules|migrations)/' },
+    exclude: { path: '(^|/)migrations/' },
     tsPreCompilationDeps: true,
     tsConfig: { fileName: 'tsconfig.base.json' },
     enhancedResolveOptions: {

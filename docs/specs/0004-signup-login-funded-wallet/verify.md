@@ -60,3 +60,9 @@ Setup you may want first: `pnpm run up && pnpm db:migrate`, then `pnpm dev` (API
 
 ## Acceptance-criteria coverage
 - AC-1 sign up steps 1, 2 · AC-2 step 3, ledger:verify · AC-3 steps 5 to 7 · AC-4 step 4 and the race check · AC-5 steps 8, 9 · AC-6 step 10 · AC-7 steps 12 to 14 · AC-8 steps 11, 16 · AC-9 step 15 · AC-10 step 17 · AC-11 step 18 · AC-12 step 19 · AC-13 step 20 · AC-14 step 21 · AC-15 step 22
+
+## Layout (spec 0005) · added 2026-10-26
+_The API moved into feature folders with behavior unchanged. These steps check the move; every step above still applies as written._
+- [ ] `pnpm test:int apps/api` → 4 files green: `src/app.int.test.ts`, `src/features/auth/signup-login.int.test.ts`, `src/features/auth/sessions.int.test.ts`, `src/features/wallets/wallet-access.int.test.ts` → AC-1 to AC-14
+- [ ] `pnpm lint:deps` → clean; then add one throwaway file per rule and each fails with its rule name: a `features/users/x.controller.ts` importing `withTx` (`api-controllers-and-routes-no-core-values`) or `../wallets/wallets.schemas.ts` (`api-features-isolated`); a `features/users/x.service.ts` importing `express` or `../../http/cookies.ts` (`api-services-no-http`); a `src/x.ts` importing `./features/auth/auth.service.ts` (`api-features-through-index`). Delete them after → spec 0005 Enforcement
+- [ ] `src/routes/`, `src/middleware/`, `src/serialize.ts`, and top level `src/cookies.ts` are gone, and `grep -rn "RouteDeps" apps/api` finds nothing → spec 0005 Rollout

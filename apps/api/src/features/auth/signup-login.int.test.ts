@@ -12,7 +12,7 @@ import {
   uniqueEmail,
   type TestApi,
   anyString,
-} from './test-support.ts';
+} from '../../test-support.ts';
 
 describe('sign up and log in', () => {
   let api: TestApi;
