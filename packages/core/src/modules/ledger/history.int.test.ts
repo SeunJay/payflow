@@ -3,7 +3,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createLogger } from '@payflow/shared';
 import { createTestDatabase, type TestDatabase } from '@payflow/test-utils';
 import { createDb, type DbHandle } from '../../infra/db.ts';
+import { withTx } from '../../infra/tx.ts';
+import { openAccount } from './accounts.ts';
 import { listEntries } from './history.ts';
+import { post } from './post.ts';
 import type { EntryView } from './types.ts';
 import { fund, openWallet } from './test-support.ts';
 
@@ -71,6 +74,65 @@ describe('ledger listEntries (AC-9)', () => {
     const wallet = await openWallet(db);
 
     expect(await listEntries(db, wallet.id)).toEqual({ items: [], nextCursor: null });
+  });
+
+  it('shows amounts on the normal side: a debit lowers equity, a credit lowers an asset', async () => {
+    const suffix = randomUUID().slice(0, 8);
+    const [asset, equity] = await withTx(db, async (tx) => [
+      await openAccount(tx, { type: 'asset', currency: 'NGN', code: `asset_${suffix}`, allowNegative: true }),
+      await openAccount(tx, { type: 'equity', currency: 'NGN', code: `equity_${suffix}`, allowNegative: true }),
+    ]);
+
+    // Debit equity by 10, credit the asset by 10.
+    await withTx(db, (tx) =>
+      post(tx, {
+        postingKey: `sign:${randomUUID()}`,
+        kind: 'test_deposit',
+        description: 'Sign check',
+        entries: [
+          { accountId: equity.id, amount: 10n },
+          { accountId: asset.id, amount: -10n },
+        ],
+      }),
+    );
+
+    expect((await listEntries(db, equity.id)).items[0]).toMatchObject({ amount: -10n, balanceAfter: -10n });
+    expect((await listEntries(db, asset.id)).items[0]).toMatchObject({ amount: -10n, balanceAfter: -10n });
+  });
+
+  it('carries the transaction kind, description, and created_at on each item', async () => {
+    const wallet = await openWallet(db);
+    const posted = await fund(db, wallet.id, 10n);
+
+    const [item] = (await listEntries(db, wallet.id)).items;
+
+    expect(item).toEqual({
+      entryId: posted.entries.find((e) => e.accountId === wallet.id)?.entryId,
+      transactionId: posted.id,
+      seq: 1n,
+      amount: 10n,
+      balanceAfter: 10n,
+      kind: 'test_deposit',
+      description: 'Test deposit',
+      createdAt: posted.createdAt,
+    });
+  });
+
+  it('only lists the requested account entries', async () => {
+    const a = await openWallet(db);
+    const b = await openWallet(db);
+    await fund(db, a.id, 1n);
+    await fund(db, b.id, 2n);
+
+    const items = (await listEntries(db, a.id)).items;
+
+    expect(items.map((i) => i.amount)).toEqual([1n]);
+  });
+
+  it('returns an empty last page for a cursor at the oldest seq', async () => {
+    const wallet = await walletWithPostings(3);
+
+    expect(await listEntries(db, wallet.id, { cursor: '1' })).toEqual({ items: [], nextCursor: null });
   });
 
   it.each([
