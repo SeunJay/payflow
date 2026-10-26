@@ -1,8 +1,8 @@
 // Helpers shared by the ledger integration tests. Only *.int.test.ts files import this.
 import { randomUUID } from 'node:crypto';
-import { setTimeout as sleep } from 'node:timers/promises';
 import { sql } from 'drizzle-orm';
 import type pg from 'pg';
+import { holdOpen as holdOpenWith, waitForLockWaiters as waitForLockWaitersOn, type HeldTx } from '@payflow/test-utils';
 import type { Db } from '../../infra/db.ts';
 import { withTx, type Tx } from '../../infra/tx.ts';
 import { getSystemAccount, openAccount } from './accounts.ts';
@@ -52,56 +52,16 @@ export const transferInput = (from: string, to: string, amount: bigint, postingK
 export const transfer = (db: Db, from: string, to: string, amount: bigint, postingKey?: string) =>
   withTx(db, (tx) => post(tx, transferInput(from, to, amount, postingKey)));
 
-export type HeldTx<T> = {
-  /** Settles once `work` has run, while the unit of work is still open. */
-  readonly worked: Promise<T>;
-  /** Lets the unit of work commit and settles when it has. */
-  readonly commit: () => Promise<T>;
-  /** Rolls the unit of work back instead, releasing its locks, and settles when it has. */
-  readonly rollback: () => Promise<void>;
-};
+export type { HeldTx } from '@payflow/test-utils';
 
 /** Runs `work` in a unit of work and keeps it open (locks held) until `commit` or `rollback` is called. */
-export function holdOpen<T>(db: Db, work: (tx: Tx) => Promise<T>): HeldTx<T> {
-  const gate = Promise.withResolvers<'commit' | 'rollback'>();
-  const worked = Promise.withResolvers<T>();
-  const committed = withTx(db, async (tx) => {
-    const value = await work(tx).catch((err: unknown) => {
-      worked.reject(err);
-      throw err;
-    });
-    worked.resolve(value);
-    if ((await gate.promise) === 'rollback') throw new Error('held unit of work rolled back');
-    return value;
-  });
-  // Marked handled here; callers still see the rejection when they await.
-  committed.catch(() => undefined);
-  worked.promise.catch(() => undefined);
-  return {
-    worked: worked.promise,
-    commit: () => {
-      gate.resolve('commit');
-      return committed;
-    },
-    rollback: async () => {
-      gate.resolve('rollback');
-      await committed.catch(() => undefined);
-    },
-  };
-}
+export const holdOpen = <T>(db: Db, work: (tx: Tx) => Promise<T>): HeldTx<T> =>
+  holdOpenWith((fn: (tx: Tx) => Promise<T>) => withTx(db, fn), work);
 
 /** Waits until at least `count` sessions in this database are blocked on a lock. */
-export async function waitForLockWaiters(db: Db, count: number): Promise<void> {
-  for (let attempt = 0; attempt < 400; attempt++) {
-    const result = await db.execute<{ waiting: number }>(
-      sql`select count(*)::int as waiting from pg_stat_activity
-           where datname = current_database() and wait_event_type = 'Lock'`,
-    );
-    if ((result.rows[0]?.waiting ?? 0) >= count) return;
-    await sleep(25);
-  }
-  throw new Error(`timed out waiting for ${String(count)} lock waiters`);
-}
+// `createDb` always builds the client on a pg Pool; the `Db` type just does not carry `$client`.
+export const waitForLockWaiters = (db: Db, count: number): Promise<void> =>
+  waitForLockWaitersOn((db as Db & { $client: pg.Pool }).$client, count);
 
 /** Runs raw SQL on one connection inside BEGIN ... COMMIT, rolling back if anything throws. */
 export async function rawTx(pool: pg.Pool, fn: (client: pg.PoolClient) => Promise<void>): Promise<void> {

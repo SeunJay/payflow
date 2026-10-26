@@ -1,21 +1,27 @@
-import { createDb, createValkey } from '@payflow/core';
-import { createHttpApp } from '@payflow/http';
+import { createAuthContext, createDb, createValkey } from '@payflow/core';
 import { createLogger, onShutdown } from '@payflow/shared';
+import { buildApp } from './app.ts';
 import { config } from './config.ts';
 
 const logger = createLogger({ name: 'api', level: config.LOG_LEVEL });
 const db = createDb({ url: config.DATABASE_URL, logger });
 const valkey = createValkey({ url: config.VALKEY_URL, logger });
+const auth = await createAuthContext({
+  jwtSecret: config.JWT_SECRET,
+  accessTtlSeconds: config.ACCESS_TOKEN_TTL_SECONDS,
+  refreshTtlSeconds: config.REFRESH_TOKEN_TTL_SECONDS,
+  bcryptCost: config.BCRYPT_COST,
+});
 
-const app = createHttpApp({
+const app = buildApp({
+  db: db.db,
   logger,
+  config,
+  auth,
   readiness: [
     { name: 'postgres', check: db.ping },
     { name: 'valkey', check: valkey.ping },
   ],
-  mount: () => {
-    // /v1 routes are mounted here as slices land.
-  },
 });
 
 const server = app.listen(config.API_PORT, () => {

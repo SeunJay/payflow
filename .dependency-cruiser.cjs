@@ -62,7 +62,8 @@ module.exports = {
     {
       name: 'test-utils-only-from-tests',
       severity: 'error',
-      from: { path: '^(apps|packages)/', pathNot: ['\\.test\\.ts$', '^packages/test-utils/'] },
+      comment: 'Test files and the test-support.ts helpers beside them only',
+      from: { path: '^(apps|packages)/', pathNot: ['\\.test\\.ts$', '/test-support\\.ts$', '^packages/test-utils/'] },
       to: { path: '^packages/test-utils/' },
     },
     {

@@ -19,13 +19,18 @@ packageExtensions:
       typescript: '>=2.0.0 <7.0.0'
 
 catalog:
+  '@types/cookie-parser': ^1.4.10
   '@types/express': ^5.0.6
+  '@types/jsonwebtoken': ^9.0.10
   '@types/node': ^24.19.2
   '@types/pg': ^8.23.1
+  bcryptjs: ^3.0.3
+  cookie-parser: ^1.4.7
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.4
   express: ^5.3.0
   ioredis: ^6.0.0
+  jsonwebtoken: ^9.0.3
   pg: ^8.23.1
   pino: ^10.4.0
   pino-http: ^11.0.0

@@ -15,13 +15,16 @@
   "dependencies": {
     "@payflow/provider-contract": "workspace:*",
     "@payflow/shared": "workspace:*",
+    "bcryptjs": "catalog:",
     "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
+    "jsonwebtoken": "catalog:",
     "pg": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@payflow/test-utils": "workspace:*",
+    "@types/jsonwebtoken": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "drizzle-kit": "catalog:",

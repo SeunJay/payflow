@@ -1,6 +1,6 @@
 import express, { type Express } from 'express';
 import { pinoHttp } from 'pino-http';
-import type { Logger } from '@payflow/shared';
+import { serializeErr, type Logger } from '@payflow/shared';
 import { correlationIdOf, genReqId } from './ids.ts';
 import { healthRouter, type ReadinessCheck } from './health.ts';
 import { notFound, problemHandler } from './problem.ts';
@@ -20,6 +20,8 @@ export function createHttpApp(options: {
   app.use(
     pinoHttp({
       logger: options.logger,
+      // pino-http installs its own err serializer on the request logger; this keeps the shared, query safe one.
+      serializers: { err: serializeErr },
       genReqId,
       customProps: (_req, res) => ({ correlation_id: correlationIdOf(res) }),
       autoLogging: { ignore: (req) => req.url === '/health' || req.url === '/ready' },
