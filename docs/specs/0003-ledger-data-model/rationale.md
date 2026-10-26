@@ -52,3 +52,16 @@ An independent review of the draft (2026-10-25) led to these changes, all accept
 - Balances are written as `balance + delta ... RETURNING`, verification reads each account in one statement, and `created_at` uses `clock_timestamp()`.
 - New database guards: only system accounts may go negative, and a reversal cannot reverse a reversal. Appending to an old transaction stays app enforced, because an `xmin` based check breaks under savepoints.
 - Concurrency tests are deterministic (one transaction held open while the other starts), with a negative control that proves the deadlock test can fail.
+
+### Refinement from the code review (2026-10-26)
+
+A fresh model review of the built branch found that "key before funds" only held for a sequential replay. A concurrent replay that shares accounts with the first post waits on the account locks, then reads the drained balance and got 422 `insufficient_funds`. A concurrent replay of a reversal key waited on the transaction row lock and got `already_reversed`. Both broke the idempotency promise of AC-7 and AC-8. The tests only raced posts on disjoint accounts, where `ON CONFLICT` already answers correctly.
+
+Options weighed:
+- **Check the key again right after each lock (chosen).** Under read committed, every new statement sees rows committed before it starts, so a lookup placed after the lock wait sees the winner. One extra indexed `SELECT`, no new lock, and the lock order stays exactly as it was. Con: the key is looked up twice on every call.
+- **Take a transaction scoped advisory lock on a hash of the posting key before the account locks.** This serialises replays up front. Con: a second kind of lock with its own ordering rules, hash collisions that serialise unrelated posts, and one more thing a caller's locking contract must respect.
+- **Insert the transaction row (`ON CONFLICT DO NOTHING`) before the funds check.** The insert itself would wait on the key and answer 409. Con: a caller that catches `insufficient_funds` and keeps going would be left with a transaction row that has no entries, which the deferred balance trigger then rejects at COMMIT, failing the caller's whole unit of work far from the cause.
+
+The engineer accepted the first option. The early check stays, so the common sequential replay still answers before taking any lock.
+
+Cross check (Sonnet, 2026-10-26) confirmed the fix holds under read committed and matches the code. The engineer accepted its follow-ups: the AC text now covers a rolled back winner and payload blind keys, step 4 states that one shared account is enough, `reverse` lists its full check order, and the test plan adds partial overlap, post vs reverse on one key, and rollback schedules, each proven to be waiting via `pg_stat_activity`.

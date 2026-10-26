@@ -15,7 +15,7 @@ _Learning companion: [docs/learning/concepts.md](../learning/concepts.md) explai
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
-| 3 | Ledger data model | Foundation | in-progress |
+| 3 | Ledger data model | Foundation | done |
 | 4 | Sign up, log in, and a funded wallet | Slice 1 | planned |
 | 5 | Peer transfers with overspend protection | Slice 2 | planned |
 | 6 | Idempotent transfer requests | Slice 3 | planned |
@@ -50,7 +50,7 @@ spec [0002](../specs/0002-git-workflow.md)
 - [x] Install the tooling: `/develop tooling`
 - [x] Check it runs clean: `/test`
 
-### 3. Ledger data model · in-progress · GA
+### 3. Ledger data model · done · GA
 The shape of money: user wallet accounts and platform system accounts, ledger transactions, ledger entries, amounts in integer minor units with a currency, and balances derived from entries. Every later slice posts through this, so it gets the most rigor.
 **Done when:** a ledger transaction whose entries do not balance per currency cannot be saved, entries cannot be updated or deleted, and any wallet balance can be rebuilt from entries alone.
 spec [0003](../specs/0003-ledger-data-model/index.md) · code in `packages/core/src/modules/ledger/`
@@ -60,10 +60,10 @@ spec [0003](../specs/0003-ledger-data-model/index.md) · code in `packages/core/
   - [x] Database guards: balance at commit, immutability, account guard, no reversal of a reversal (AC-1, AC-3, AC-4, AC-6, AC-8)
   - [x] Input, errors, and reversal: Zod input, duplicate posting, insufficient funds, reverse (AC-2, AC-6, AC-7, AC-8)
   - [x] Reads, verification, and concurrency: history pagination, ledger verify, deadlock tests (AC-9, AC-10, AC-12)
-- [ ] Verify it: `/check verify ledger data model`
-- [ ] Test it: `/test ledger data model`
-- [ ] Review it (fresh model): `/check review ledger data model`
-- [ ] Document it: `/document ledger data model`
+- [x] Verify it: `/check verify ledger data model`
+- [x] Test it: `/test ledger data model`
+- [x] Review it (fresh model): `/check review ledger data model`
+- [x] Document it: `/document ledger data model`
 
 ## Phase 1: Money core
 
