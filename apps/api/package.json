@@ -13,13 +13,16 @@
     "@payflow/http": "workspace:*",
     "@payflow/provider-contract": "workspace:*",
     "@payflow/shared": "workspace:*",
+    "cookie-parser": "catalog:",
     "express": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
+    "@payflow/test-utils": "workspace:*",
+    "@types/cookie-parser": "catalog:",
     "@types/express": "catalog:",
-    "tsx": "catalog:"
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   }
 }

@@ -72,3 +72,5 @@ export async function startServer(handlerOrServer: RequestListener | Server): Pr
       }),
   };
 }
+
+export { holdOpen, waitForLockWaiters, type HeldTx } from './concurrency.ts';

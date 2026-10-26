@@ -16,7 +16,7 @@ _Learning companion: [docs/learning/concepts.md](../learning/concepts.md) explai
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Ledger data model | Foundation | done |
-| 4 | Sign up, log in, and a funded wallet | Slice 1 | planned |
+| 4 | Sign up, log in, and a funded wallet | Slice 1 | done |
 | 5 | Peer transfers with overspend protection | Slice 2 | planned |
 | 6 | Idempotent transfer requests | Slice 3 | planned |
 | 7 | Payment state machine | Slice 4 | planned |
@@ -67,10 +67,20 @@ spec [0003](../specs/0003-ledger-data-model/index.md) · code in `packages/core/
 
 ## Phase 1: Money core
 
-### 4. Sign up, log in, and a funded wallet · needs a decision · GA
+### 4. Sign up, log in, and a funded wallet · done · GA
 The walking skeleton. Real sign up and log in, a wallet created for each new user, an instant internal test deposit that posts balanced entries, and API reads for balance and history. No provider, no transfers yet.
 **Done when:** a new user can sign up, log in, receive a ₦10,000 test deposit, and read a ₦10,000 balance with one history item backed by two balanced entries; calls without a valid session are rejected.
-- [ ] Design it (spec): `/architect sign up, log in, and a funded wallet`
+spec [0004](../specs/0004-signup-login-funded-wallet/index.md) · code in `packages/core/src/modules/identity/`, `packages/core/src/modules/wallets/`, `apps/api/src/`
+- [x] Design it (spec): `/architect sign up, log in, and a funded wallet`
+- [x] Build it: `/develop sign up, log in, and a funded wallet`
+  - [x] Thin thread: schema, sign up with the funded wallet, log in, read ₦10,000, secrets redacted in logs (AC-1, AC-2, AC-5, AC-8, AC-14, AC-15)
+  - [x] Input, errors, and authorization: JSON gate, validation, duplicate email race, invalid credentials, access token checks, history pagination, two user isolation (AC-3, AC-4, AC-6, AC-7, AC-8, AC-9)
+  - [x] Refresh rotation, reuse detection, and log out, with the refresh race test and auth event logs (AC-10, AC-11, AC-12, AC-13, AC-14)
+  - [x] Move the API into the [spec 0005](../specs/0005-api-feature-folder-layout.md) feature layout (routes, controllers, use case services, lint rules), behavior unchanged (AC-1 to AC-15 still green)
+- [x] Verify it: `/check verify sign up, log in, and a funded wallet`
+- [x] Test it: `/test sign up, log in, and a funded wallet`
+- [x] Review it (fresh model): `/check review sign up, log in, and a funded wallet`
+- [x] Document it: `/document sign up, log in, and a funded wallet`
 
 ### 5. Peer transfers with overspend protection · needs a decision
 Move money between two users' wallets in one atomic database transaction, with concurrency control so the same balance can never be spent twice.
@@ -152,6 +162,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Operations dashboard**: wallets, transaction history, failed jobs, reconciliation exceptions, manual review screens · needs a decision
 - **Customer wallet app**: a user facing frontend for funding, transfers, and history · needs a decision
 - **Password reset and email verification**: account recovery on top of sign up · needs a decision
+- **Session cleanup**: periodically delete refresh sessions expired or revoked for a while · from spec 0004 · needs a decision
 - **API reference docs**: a published description of every endpoint · needs a decision
 - **Multi currency and FX**: wallets in more than one currency and conversion between them · needs a decision · GA
 - **Hosted deployment**: running the system somewhere other than your laptop · needs a decision
