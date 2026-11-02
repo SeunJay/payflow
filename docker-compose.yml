@@ -21,7 +21,7 @@ services:
       retries: 30
 
   valkey:
-    image: valkey/valkey:8
+    image: valkey/valkey:9
     command:
       - valkey-server
       - --appendonly
