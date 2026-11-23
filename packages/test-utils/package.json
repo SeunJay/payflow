@@ -10,11 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@testcontainers/postgresql": "^12.2.1",
+    "@testcontainers/postgresql": "^12.2.2",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",
-    "testcontainers": "^12.2.1",
-    "vitest": "^5.0.5"
+    "testcontainers": "^12.2.2",
+    "vitest": "^5.1.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",
