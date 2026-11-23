@@ -2,7 +2,7 @@ name: payflow-lab
 
 services:
   postgres:
-    image: postgres:18
+    image: postgres:19
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -21,7 +21,7 @@ services:
       retries: 30
 
   valkey:
-    image: valkey/valkey:8
+    image: valkey/valkey:9
     command:
       - valkey-server
       - --appendonly
